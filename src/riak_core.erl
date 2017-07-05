@@ -88,6 +88,9 @@ get_other_ring(Node) ->
 standard_join(Node, Rejoin, Auto) when is_atom(Node) ->
     case net_adm:ping(Node) of
         pong ->
+            %% Initiate the partisan connections.
+            connect_partisan(Node),
+
             case get_other_ring(Node) of
                 {ok, Ring} ->
                     standard_join(Node, Ring, Rejoin, Auto);
@@ -436,3 +439,22 @@ wait_for_service(Service, Elapsed) ->
             timer:sleep(?WAIT_POLL_INTERVAL),
             wait_for_service(Service, Elapsed + ?WAIT_POLL_INTERVAL)
     end.
+
+%% @private
+connect_partisan(Node) ->
+    %% Use RPC to get the node's specific IP and port binding
+    %% information for the partisan backend connections.
+    PeerIP = rpc:call(Node,
+                      partisan_config,
+                      get,
+                      [peer_ip]),
+    PeerPort = rpc:call(Node,
+                        partisan_config,
+                        get,
+                        [peer_port]),
+
+    %% Ignore failure, partisan will retry in the background to
+    %% establish connections.
+    _ = partisan_peer_service:join({Node, PeerIP, PeerPort}),
+
+    ok.
