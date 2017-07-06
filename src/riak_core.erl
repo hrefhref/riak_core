@@ -208,6 +208,10 @@ leave() ->
     end.
 
 standard_leave(Node) ->
+    %% Force leave from partisan.
+    ok = partisan_peer_service:leave(Node),
+
+    %% Perform ring transition.
     riak_core_ring_manager:ring_trans(
       fun(Ring2, _) ->
               Ring3 = riak_core_ring:leave_member(Node, Ring2, Node),
@@ -455,6 +459,6 @@ connect_partisan(Node) ->
 
     %% Ignore failure, partisan will retry in the background to
     %% establish connections.
-    _ = partisan_peer_service:join({Node, PeerIP, PeerPort}),
+    ok = partisan_peer_service:join({Node, PeerIP, PeerPort}),
 
     ok.
