@@ -22,3 +22,4 @@ sim.out
 .eqc
 compile_commands.json
 rebar3.crashdump
+tags
