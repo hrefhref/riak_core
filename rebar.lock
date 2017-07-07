@@ -27,7 +27,7 @@
  {<<"parse_trans">>,{pkg,<<"parse_trans">>,<<"2.9.0">>},1},
  {<<"partisan">>,
   {git,"https://github.com/lasp-lang/partisan",
-       {ref,"2709bdc9650218a28d91648c659d30195f9ca523"}},
+       {ref,"e74e7b35bb0147cbe9a860cbd233930cd24fdd27"}},
   0},
  {<<"pbkdf2">>,{pkg,<<"pbkdf2">>,<<"2.0.0">>},0},
  {<<"poolboy">>,{pkg,<<"basho_poolboy">>,<<"0.8.2">>},0},
