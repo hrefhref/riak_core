@@ -128,7 +128,7 @@ standard_join(Node, Ring, Rejoin, Auto) ->
         {_, _, false} ->
             {error, different_ring_sizes};
         _ ->
-            %% Connect all members via partisan.
+            %% Connect all incoming members via partisan.
             _ = connect_partisan(RemoteMembers),
 
             GossipVsn = riak_core_gossip:gossip_version(),
