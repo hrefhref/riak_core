@@ -118,7 +118,8 @@ standard_join(Node, Ring, Rejoin, Auto) ->
 
     SameSize = (riak_core_ring:num_partitions(MyRing) =:=
                 riak_core_ring:num_partitions(Ring)),
-    Singleton = ([node()] =:= riak_core_ring:all_members(MyRing)),
+    RemoteMembers = riak_core_ring:all_members(MyRing),
+    Singleton = ([node()] =:= RemoteMembers),
     case {InitComplete, Rejoin or Singleton, SameSize} of
         {false, _, _} ->
             {error, node_still_starting};
@@ -127,6 +128,9 @@ standard_join(Node, Ring, Rejoin, Auto) ->
         {_, _, false} ->
             {error, different_ring_sizes};
         _ ->
+            %% Connect all members via partisan.
+            _ = connect_partisan(RemoteMembers),
+
             GossipVsn = riak_core_gossip:gossip_version(),
             Ring2 = riak_core_ring:add_member(node(), Ring,
                                               node()),
@@ -445,6 +449,9 @@ wait_for_service(Service, Elapsed) ->
     end.
 
 %% @private
+connect_partisan(Nodes) when is_list(Nodes) ->
+    [connect_partisan(Node) || Node <- Nodes],
+    ok;
 connect_partisan(Node) ->
     %% Use RPC to get the node's specific IP and port binding
     %% information for the partisan backend connections.
