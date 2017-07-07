@@ -731,6 +731,10 @@ update_member_meta(Node, State, Member, Key, Val) ->
 
 update_member_meta(Node, State, Member, Key, Val, same_vclock) ->
     Members = State?CHSTATE.members,
+
+    %% Update membership in partisan.
+    riak_core_partisan_utils:update(Members),
+
     case orddict:is_key(Member, Members) of
         true ->
             Members2 = orddict:update(Member,
