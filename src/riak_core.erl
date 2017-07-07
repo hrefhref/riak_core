@@ -89,7 +89,7 @@ standard_join(Node, Rejoin, Auto) when is_atom(Node) ->
     case net_adm:ping(Node) of
         pong ->
             %% Initiate the partisan connections.
-            connect_partisan(Node),
+            riak_core_partisan_utils:join(Node),
 
             case get_other_ring(Node) of
                 {ok, Ring} ->
@@ -129,7 +129,7 @@ standard_join(Node, Ring, Rejoin, Auto) ->
             {error, different_ring_sizes};
         _ ->
             %% Connect all incoming members via partisan.
-            _ = connect_partisan(RemoteMembers),
+            riak_core_partisan_utils:join(RemoteMembers),
 
             GossipVsn = riak_core_gossip:gossip_version(),
             Ring2 = riak_core_ring:add_member(node(), Ring,
@@ -213,7 +213,7 @@ leave() ->
 
 standard_leave(Node) ->
     %% Force leave from partisan.
-    ok = partisan_peer_service:leave(Node),
+    riak_core_partisan_utils:leave(Node),
 
     %% Perform ring transition.
     riak_core_ring_manager:ring_trans(
@@ -447,25 +447,3 @@ wait_for_service(Service, Elapsed) ->
             timer:sleep(?WAIT_POLL_INTERVAL),
             wait_for_service(Service, Elapsed + ?WAIT_POLL_INTERVAL)
     end.
-
-%% @private
-connect_partisan(Nodes) when is_list(Nodes) ->
-    [connect_partisan(Node) || Node <- Nodes],
-    ok;
-connect_partisan(Node) ->
-    %% Use RPC to get the node's specific IP and port binding
-    %% information for the partisan backend connections.
-    PeerIP = rpc:call(Node,
-                      partisan_config,
-                      get,
-                      [peer_ip]),
-    PeerPort = rpc:call(Node,
-                        partisan_config,
-                        get,
-                        [peer_port]),
-
-    %% Ignore failure, partisan will retry in the background to
-    %% establish connections.
-    ok = partisan_peer_service:join({Node, PeerIP, PeerPort}),
-
-    ok.
