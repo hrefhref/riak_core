@@ -750,6 +750,8 @@ update_member_meta(Node, State, Member, Key, Val, same_vclock) ->
                                         case Status of
                                             valid ->
                                                 Acc ++ [N];
+                                            joining ->
+                                                Acc ++ [N];
                                             _ ->
                                                 Acc
                                         end
