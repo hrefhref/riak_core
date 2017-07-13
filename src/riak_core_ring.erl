@@ -732,22 +732,31 @@ update_member_meta(Node, State, Member, Key, Val) ->
 update_member_meta(Node, State, Member, Key, Val, same_vclock) ->
     Members = State?CHSTATE.members,
 
-    %% Update membership in partisan.
-    riak_core_partisan_utils:update(Members),
-
-    case orddict:is_key(Member, Members) of
+    Members2 = case orddict:is_key(Member, Members) of
         true ->
-            Members2 = orddict:update(Member,
-                                      fun({Status, VC, MD}) ->
-                                              {Status,
-                                               vclock:increment(Node, VC),
-                                               orddict:store(Key, Val, MD)}
-                                      end,
-                                      Members),
-            State?CHSTATE{members=Members2};
+            orddict:update(Member,
+                           fun({Status, VC, MD}) ->
+                                {Status,
+                                 vclock:increment(Node, VC),
+                                 orddict:store(Key, Val, MD)}
+                           end,
+                           Members);
         false ->
-            State
-    end.
+            Members
+    end,
+
+    %% Update membership in partisan.
+    Valid = orddict:fold(fun(N, {Status, _VC, _MD}, Acc) ->
+                                        case Status of
+                                            valid ->
+                                                Acc ++ [N];
+                                            _ ->
+                                                Acc
+                                        end
+                         end, [], Members2),
+    riak_core_partisan_utils:update(Valid),
+
+    State?CHSTATE{members=Members2}.
 
 clear_member_meta(Node, State, Member) ->
     Members = State?CHSTATE.members,
