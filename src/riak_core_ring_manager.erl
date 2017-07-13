@@ -259,6 +259,10 @@ do_write_ringfile(Ring, FN) ->
 %% @spec find_latest_ringfile() -> string()
 find_latest_ringfile() ->
     Dir = ring_dir(),
+
+    %% Append 'ring', because ensure_dir only checks parent directories.
+    ok = filelib:ensure_dir(Dir ++ "/ring"),
+
     case file:list_dir(Dir) of
         {ok, Filenames} ->
             Cluster = app_helper:get_env(riak_core, cluster_name),
