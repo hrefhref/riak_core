@@ -568,9 +568,7 @@ all_peers(Root, Sets, Default) ->
 send(Msg, Peers) when is_list(Peers) ->
     [send(Msg, P) || P <- Peers];
 send(Msg, P) ->
-    PeerService = application:get_env(plumtree, peer_service, partisan_peer_service),
-    PeerServiceManager = PeerService:manager(),
-    PeerServiceManager:forward_message(P, ?SERVER, Msg).
+    riak_core_partisan_utils:forward(P, ?SERVER, Msg).
 
 schedule_lazy_tick() ->
     schedule_tick(lazy_tick, broadcast_lazy_timer, 1000).
