@@ -21,9 +21,9 @@
 -module(riak_core_partisan_utils).
 -author("Christopher S. Meiklejohn <christopher.meiklejohn@gmail.com>").
 
--export([join/1, leave/1, update/1, forward/3]).
+-export([join/1, leave/1, update/1, forward/4]).
 
-forward(Peer, Module, Message) ->
+forward(_Type, Peer, Module, Message) ->
     Manager = partisan_config:get(partisan_peer_service_manager,
                                   partisan_default_peer_service_manager),
     Manager:forward_message(Peer, Module, Message).
