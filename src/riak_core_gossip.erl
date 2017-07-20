@@ -197,7 +197,13 @@ handle_cast({send_ring_to, Node}, State) ->
     riak_core_ring:check_tainted(RingOut,
                                  "Error: riak_core_gossip/send_ring_to :: "
                                  "Sending tainted ring over gossip"),
-    gen_server:cast({?MODULE, Node}, {reconcile_ring, RingOut}),
+
+    %% This will force partisan connections to initialize, bootstrapping
+    %% off of disterl -- this connection may be pruned by partisan but
+    %% once the member is valid in the ring -- it will persist.
+    %%
+    riak_core_partisan_utils:forward(gossip, Node, ?MODULE, {reconcile_ring, RingOut}),
+    % gen_server:cast({?MODULE, Node}, {reconcile_ring, RingOut}),
     Tokens = State#state.gossip_tokens - 1,
     {noreply, State#state{gossip_tokens=Tokens}};
 
