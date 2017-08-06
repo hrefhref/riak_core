@@ -27,7 +27,7 @@
  {<<"parse_trans">>,{pkg,<<"parse_trans">>,<<"2.9.0">>},1},
  {<<"partisan">>,
   {git,"https://github.com/lasp-lang/partisan",
-       {ref,"e74e7b35bb0147cbe9a860cbd233930cd24fdd27"}},
+       {ref,"f5af65fa8ebf7fdb93f77171208c9164ac2b30f0"}},
   0},
  {<<"pbkdf2">>,{pkg,<<"pbkdf2">>,<<"2.0.0">>},0},
  {<<"poolboy">>,{pkg,<<"basho_poolboy">>,<<"0.8.2">>},0},
@@ -39,7 +39,7 @@
  {<<"riak_sysmon">>,{pkg,<<"riak_sysmon">>,<<"2.1.5">>},0},
  {<<"setup">>,{pkg,<<"setup">>,<<"1.7.0">>},1},
  {<<"time_compat">>,{pkg,<<"time_compat">>,<<"0.0.1">>},1},
- {<<"types">>,{pkg,<<"types">>,<<"0.0.4">>},1}]}.
+ {<<"types">>,{pkg,<<"types">>,<<"0.1.6">>},1}]}.
 [
 {pkg_hash,[
  {<<"acceptor_pool">>, <<"679D741DF87FC13599B1AEF2DF8F78F1F880449A6BEFAB7C44FB6FAE0E92A2DE">>},
@@ -62,5 +62,5 @@
  {<<"riak_sysmon">>, <<"2331BBCAEBE73EA7B2449F4C765827142476CC73D7D86999B4209EE005694D6B">>},
  {<<"setup">>, <<"15DF8E57C6DF9755E22BFB1AEF0C640BD97E9889396FDFB2A85A5536A9043674">>},
  {<<"time_compat">>, <<"23FE0AD1FDF3B5B88821B2D04B4B5E865BF587AE66056D671FE0F53514ED8139">>},
- {<<"types">>, <<"B2BC2D58F12D85EFD06BC3A28B3DDE3C5AEF29EFB0FEE71FC2F1B6968C5E0DC1">>}]}
+ {<<"types">>, <<"03BB7140016C896D3441A77CB0B7D6ACAA583D6D6E9C4A3E1FD3C25123710290">>}]}
 ].
