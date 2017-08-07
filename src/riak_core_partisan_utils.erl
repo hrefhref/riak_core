@@ -40,17 +40,10 @@ join(Nodes) when is_list(Nodes) ->
 join(Node) ->
     %% Use RPC to get the node's specific IP and port binding
     %% information for the partisan backend connections.
-    PeerIP = rpc:call(Node,
-                      partisan_config,
-                      get,
-                      [peer_ip]),
-    PeerPort = rpc:call(Node,
-                        partisan_config,
-                        get,
-                        [peer_port]),
+    ListenAddrs = rpc:call(Node, partisan_config, get, [listen_addrs]),
 
     %% Ignore failure, partisan will retry in the background to
     %% establish connections.
-    ok = partisan_peer_service:join({Node, PeerIP, PeerPort}),
+    ok = partisan_peer_service:join(#{name => Node, listen_addrs => ListenAddrs}),
 
     ok.
