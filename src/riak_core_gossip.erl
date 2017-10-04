@@ -202,8 +202,7 @@ handle_cast({send_ring_to, Node}, State) ->
     %% off of disterl -- this connection may be pruned by partisan but
     %% once the member is valid in the ring -- it will persist.
     %%
-    riak_core_partisan_utils:forward(gossip, Node, ?MODULE, {reconcile_ring, RingOut}),
-    % gen_server:cast({?MODULE, Node}, {reconcile_ring, RingOut}),
+    riak_core_partisan_utils:cast(gossip, {?MODULE, Node}, {reconcile_ring, RingOut}),
     Tokens = State#state.gossip_tokens - 1,
     {noreply, State#state{gossip_tokens=Tokens}};
 

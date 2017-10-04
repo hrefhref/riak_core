@@ -72,7 +72,7 @@ send_event_reliable(Name, Event) ->
     ok.
 
 bang_unreliable(Dest, Msg) ->
-    riak_core_partisan_utils:bang_unreliable(Dest, Msg).
+    riak_core_partisan_utils:bang_unreliable(vnode, Dest, Msg).
 
 bang_reliable(Dest, Msg) ->
-    riak_core_partisan_utils:bang_reliable(Dest, Msg).
+    riak_core_partisan_utils:bang_reliable(vnode, Dest, Msg).

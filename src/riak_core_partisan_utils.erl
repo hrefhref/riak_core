@@ -21,8 +21,9 @@
 -module(riak_core_partisan_utils).
 -author("Christopher S. Meiklejohn <christopher.meiklejohn@gmail.com>").
 
--export([bang_unreliable/2,
-         bang_reliable/2,
+-export([cast/3,
+         bang_unreliable/3,
+         bang_reliable/3,
          join/1, 
          leave/1, 
          update/1, 
@@ -35,24 +36,29 @@
 %% distinction for portability but they both function mostly the same: until we need
 %% the distinction.
 
-bang_unreliable(Destination, Message) ->
-    bang(Destination, Message, [noconnect, nosuspend]).
+cast(Tag, Destination, Message) ->
+    Options = [noconnect, nosuspend],
+    bang(Tag, Destination, {'$gen_cast', Message}, Options),
+    ok.
 
-bang_reliable(Destination, Message) ->
-    bang(Destination, Message, []).
+bang_unreliable(Tag, Destination, Message) ->
+    bang(Tag, Destination, Message, [noconnect, nosuspend]).
 
-bang(Pid, Message, _Options) when is_pid(Pid) ->
+bang_reliable(Tag, Destination, Message) ->
+    bang(Tag, Destination, Message, []).
+
+bang(Tag, Pid, Message, _Options) when is_pid(Pid) ->
     Node = node(Pid),
-    forward(vnode, Node, Pid, Message),
+    forward(Tag, Node, Pid, Message),
     Message;
-bang(Port, Message, Options) when is_port(Port) ->
+bang(_Tag, Port, Message, Options) when is_port(Port) ->
     catch erlang:send(Port, Message, Options),
     Message;
-bang(RegName, Message, Options) when is_atom(RegName) ->
+bang(_Tag, RegName, Message, Options) when is_atom(RegName) ->
     catch erlang:send(RegName, Message, Options),
     Message;
-bang({RegName, Node}, Message, _Options) when is_atom(RegName) ->
-    forward(vnode, Node, RegName, Message),
+bang(Tag, {RegName, Node}, Message, _Options) when is_atom(RegName) ->
+    forward(Tag, Node, RegName, Message),
     Message.
 
 forward(_Type, Peer, Module, Message) ->
