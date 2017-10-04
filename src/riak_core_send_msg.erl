@@ -53,5 +53,4 @@ send_event_unreliable(Name, Event) ->
     ok.
 
 bang_unreliable(Dest, Msg) ->
-    catch erlang:send(Dest, Msg, [noconnect, nosuspend]),
-    Msg.
+    riak_core_partisan_utils:bang(Dest, Msg).
