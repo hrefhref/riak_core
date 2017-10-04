@@ -193,7 +193,7 @@ proxy_cast({VMaster, Node}, Req, How) ->
     case riak_core_capability:get({riak_core, vnode_routing}, legacy) of
         legacy ->
             if How == normal ->
-                    gen_server:cast({VMaster, Node}, Req);
+                    riak_core_send_msg:cast_reliable({VMaster, Node}, Req);
                How == unreliable ->
                     riak_core_send_msg:cast_unreliable({VMaster, Node}, Req)
             end;
@@ -213,7 +213,7 @@ do_proxy_cast({VMaster, Node}, Req=?COVERAGE_REQ{index=Idx}, How) ->
     ok.
 
 send_an_event(Dest, Event, normal) ->
-    gen_fsm:send_event(Dest, Event);
+    riak_core_send_msg:send_event_reliable(Dest, Event);
 send_an_event(Dest, Event, unreliable) ->
     riak_core_send_msg:send_event_unreliable(Dest, Event).
 

@@ -21,20 +21,38 @@
 -module(riak_core_partisan_utils).
 -author("Christopher S. Meiklejohn <christopher.meiklejohn@gmail.com>").
 
--export([bang/2, join/1, leave/1, update/1, forward/4]).
+-export([bang_unreliable/2,
+         bang_reliable/2,
+         join/1, 
+         leave/1, 
+         update/1, 
+         forward/4]).
 
-bang(Pid, Message) when is_pid(Pid) ->
+%% The major difference in Riak was that bang vs. bang_unreliable were used
+%% avoid buffer overflows with Distributed Erlang's distribution port;
+%% bang_unreliable wouldn't establish a connection, where as the reliable
+%% version would use gen_fsm:send; in our model, we have the function
+%% distinction for portability but they both function mostly the same: until we need
+%% the distinction.
+
+bang_unreliable(Destination, Message) ->
+    bang(Destination, Message, [noconnect, nosuspend]).
+
+bang_reliable(Destination, Message) ->
+    bang(Destination, Message, []).
+
+bang(Pid, Message, _Options) when is_pid(Pid) ->
     Node = node(Pid),
-    forward(undefined, Node, Pid, Message),
+    forward(vnode, Node, Pid, Message),
     Message;
-bang(Port, Message) when is_port(Port) ->
-    catch erlang:send(Port, Message, [noconnect, nosuspend]),
+bang(Port, Message, Options) when is_port(Port) ->
+    catch erlang:send(Port, Message, Options),
     Message;
-bang(RegName, Message) when is_atom(RegName) ->
-    catch erlang:send(RegName, Message, [noconnect, nosuspend]),
+bang(RegName, Message, Options) when is_atom(RegName) ->
+    catch erlang:send(RegName, Message, Options),
     Message;
-bang({RegName, Node}, Message) when is_atom(RegName) ->
-    forward(undefined, Node, RegName, Message),
+bang({RegName, Node}, Message, _Options) when is_atom(RegName) ->
+    forward(vnode, Node, RegName, Message),
     Message.
 
 forward(_Type, Peer, Module, Message) ->

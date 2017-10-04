@@ -23,9 +23,13 @@
 -module(riak_core_send_msg).
 
 -export([reply_unreliable/2,
+         reply_reliable/2,
          cast_unreliable/2,
+         cast_reliable/2,
          send_event_unreliable/2,
-         bang_unreliable/2]).
+         send_event_reliable/2,
+         bang_unreliable/2,
+         bang_reliable/2]).
 
 -ifdef(TEST).
 -ifdef(PULSE).
@@ -40,8 +44,14 @@
 reply_unreliable({To, Tag}, Reply) ->
     bang_unreliable(To, {Tag, Reply}).
 
+reply_reliable({To, Tag}, Reply) ->
+    bang_reliable(To, {Tag, Reply}).
+
 cast_unreliable(Dest, Request) ->
     bang_unreliable(Dest, {'$gen_cast', Request}).
+
+cast_reliable(Dest, Request) ->
+    bang_reliable(Dest, {'$gen_cast', Request}).
 
 %% NOTE: We'ed peeked inside gen_fsm.erl's guts to see its internals.
 send_event_unreliable({global, _Name} = GlobalTo, Event) ->
@@ -52,5 +62,17 @@ send_event_unreliable(Name, Event) ->
     bang_unreliable(Name, {'$gen_event', Event}),
     ok.
 
+%% NOTE: We'ed peeked inside gen_fsm.erl's guts to see its internals.
+send_event_reliable({global, _Name} = GlobalTo, Event) ->
+    erlang:error({unimplemented_send, GlobalTo, Event});
+send_event_reliable({via, _Mod, _Name} = ViaTo, Event) ->
+    erlang:error({unimplemented_send, ViaTo, Event});
+send_event_reliable(Name, Event) ->
+    bang_reliable(Name, {'$gen_event', Event}),
+    ok.
+
 bang_unreliable(Dest, Msg) ->
-    riak_core_partisan_utils:bang(Dest, Msg).
+    riak_core_partisan_utils:bang_unreliable(Dest, Msg).
+
+bang_reliable(Dest, Msg) ->
+    riak_core_partisan_utils:bang_reliable(Dest, Msg).
