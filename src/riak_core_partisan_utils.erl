@@ -27,7 +27,8 @@
          join/1, 
          leave/1, 
          update/1, 
-         forward/4]).
+         forward/4,
+         configure_dispatch/0]).
 
 %% The major difference in Riak was that bang vs. bang_unreliable were used
 %% avoid buffer overflows with Distributed Erlang's distribution port;
@@ -77,6 +78,7 @@ forward(_Type, Peer, Module, Message) ->
     end.
 
 update(Nodes) ->
+    lager:info("Membership now updating members to: ~p on node ~p", [Nodes, node()]),
     partisan_peer_service:update_members(Nodes).
 
 leave(Node) ->
@@ -99,3 +101,14 @@ join(Node) ->
 %% @private
 should_dispatch() ->
     partisan_mochiglobal:get(partisan_dispatch, false).
+
+configure_dispatch() ->
+    ShouldDispatch = application:get_env(riak_core, partisan_dispatch, false),
+    Dispatch = case ShouldDispatch of
+        undefined ->
+            false;
+        Other ->
+            Other
+    end,
+    lager:info("Configuring partisan dispatch: ~p", [Dispatch]),
+    partisan_mochiglobal:put(partisan_dispatch, Dispatch).

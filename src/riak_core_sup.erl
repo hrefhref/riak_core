@@ -58,6 +58,8 @@ init([]) ->
                    {riak_ensemble_sup, start_link, [Root]},
                    permanent, 30000, supervisor, [riak_ensemble_sup]},
 
+    riak_core_partisan_utils:configure_dispatch(),
+
     Children = lists:flatten(
                  [?CHILD(riak_core_bg_manager, worker),
                   ?CHILD(riak_core_sysmon_minder, worker),
