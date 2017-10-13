@@ -746,8 +746,8 @@ update_member_meta(Node, State, Member, Key, Val, same_vclock) ->
     end,
 
     %% Update membership in partisan.
-    Valid = orddict:fold(fun(N, {Status, _VC, _MD}, Acc) ->
-                                        case Status of
+    Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
+                                        case S of
                                             valid ->
                                                 Acc ++ [N];
                                             joining ->
@@ -805,6 +805,20 @@ set_member(Node, CState, Member, Status, same_vclock) ->
                               {Status, vclock:increment(Node,
                                                         vclock:fresh()), []},
                               CState?CHSTATE.members),
+
+    %% Update membership in partisan.
+    Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
+                                        case S of
+                                            valid ->
+                                                Acc ++ [N];
+                                            joining ->
+                                                Acc ++ [N];
+                                            _ ->
+                                                Acc
+                                        end
+                         end, [], Members2),
+    riak_core_partisan_utils:update(Valid),
+
     CState?CHSTATE{members=Members2}.
 
 %% @doc Return a list of all members of the cluster that are eligible to
