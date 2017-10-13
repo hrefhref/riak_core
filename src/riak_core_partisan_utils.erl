@@ -69,7 +69,14 @@ forward(_Type, Peer, Module, Message) ->
                 Peer ->
                     erlang:send(Module, Message);
                 _ ->
-                    erlang:send({Module, Peer}, Message)
+                    case is_pid(Module) of
+                        true ->
+                            %% Can't remotely send to pid, only registered name; use proxy.
+                            erlang:send({riak_core_partisan_proxy_service, Peer}, {forward, Module, Message}),
+                            ok;
+                        false ->
+                            erlang:send({Module, Peer}, Message)
+                    end
             end;
         true ->
             Manager = partisan_config:get(partisan_peer_service_manager,
