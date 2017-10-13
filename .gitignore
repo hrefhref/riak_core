@@ -23,3 +23,4 @@ sim.out
 compile_commands.json
 rebar3.crashdump
 tags
+.rebar3/erlcinfo
