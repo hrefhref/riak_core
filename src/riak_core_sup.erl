@@ -81,6 +81,7 @@ init([]) ->
                   ?CHILD(riak_core_gossip, worker),
                   ?CHILD(riak_core_claimant, worker),
                   ?CHILD(riak_core_table_owner, worker),
+                  ?CHILD(riak_core_partisan_proxy_service, worker),
                   ?CHILD(riak_core_stat_sup, supervisor),
                   [EnsembleSup || ensembles_enabled()]
                  ]),
