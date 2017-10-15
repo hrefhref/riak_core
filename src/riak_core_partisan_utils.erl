@@ -62,7 +62,7 @@ bang(Tag, {RegName, Node}, Message, _Options) when is_atom(RegName) ->
     forward(Tag, Node, RegName, Message),
     Message.
 
-forward(_Type, Peer, Module, Message) ->
+forward(Type, Peer, Module, Message) ->
     case should_dispatch() of
         false ->
             case node() of
@@ -81,7 +81,7 @@ forward(_Type, Peer, Module, Message) ->
         true ->
             Manager = partisan_config:get(partisan_peer_service_manager,
                                           partisan_default_peer_service_manager),
-            Manager:forward_message(Peer, Module, Message)
+            Manager:forward_message(Peer, Type, Module, Message)
     end.
 
 update(Nodes) ->
