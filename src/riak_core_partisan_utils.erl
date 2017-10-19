@@ -62,7 +62,9 @@ bang(Tag, {RegName, Node}, Message, _Options) when is_atom(RegName) ->
     forward(Tag, Node, RegName, Message),
     Message.
 
-forward(Type, Peer, Module, Message) ->
+forward(Type0, Peer, Module, Message) ->
+    Type = rewrite_type(Type0),
+
     case should_dispatch() of
         false ->
             case node() of
@@ -119,3 +121,18 @@ configure_dispatch() ->
     end,
     lager:info("Configuring partisan dispatch: ~p", [Dispatch]),
     partisan_mochiglobal:put(partisan_dispatch, Dispatch).
+
+%% @private
+rewrite_type(Type) ->
+    case Type of
+        vnode ->
+            vnode;
+        gossip ->
+            %% Gossip should dispatch using a monotonic channel.
+            {monotonic, gossip};
+        metadata ->
+            metadata;
+        Other ->
+            lager:error("Unknown message type for partisan dispatch: ~p", [Other]),
+            exit({error, {unknown_partisan_dispatch_type, Other}})
+    end.
