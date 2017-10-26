@@ -52,7 +52,8 @@
          responsible_index/2,
          transfer_node/3,
          update_meta/3,
-         remove_meta/2]).
+         remove_meta/2,
+         notify_external_membership/1]).
 
 -export([cluster_name/1,
          upgrade/1,
@@ -745,18 +746,7 @@ update_member_meta(Node, State, Member, Key, Val, same_vclock) ->
             Members
     end,
 
-    %% Update membership in partisan.
-    Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
-                                        case S of
-                                            valid ->
-                                                Acc ++ [N];
-                                            joining ->
-                                                Acc ++ [N];
-                                            _ ->
-                                                Acc
-                                        end
-                         end, [], Members2),
-    riak_core_partisan_utils:update(Valid),
+    notify_external_membership(State?CHSTATE{members=Members2}),
 
     State?CHSTATE{members=Members2}.
 
@@ -806,18 +796,7 @@ set_member(Node, CState, Member, Status, same_vclock) ->
                                                         vclock:fresh()), []},
                               CState?CHSTATE.members),
 
-    %% Update membership in partisan.
-    Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
-                                        case S of
-                                            valid ->
-                                                Acc ++ [N];
-                                            joining ->
-                                                Acc ++ [N];
-                                            _ ->
-                                                Acc
-                                        end
-                         end, [], Members2),
-    riak_core_partisan_utils:update(Valid),
+    notify_external_membership(CState?CHSTATE{members=Members2}),
 
     CState?CHSTATE{members=Members2}.
 
@@ -1646,7 +1625,7 @@ reconcile_ring(StateA=?CHSTATE{claimant=Claimant1, rvsn=VC1, next=Next1},
     V1Newer = vclock:descends(VC1, VC2),
     V2Newer = vclock:descends(VC2, VC1),
     EqualVC = (vclock:equal(VC1, VC2) and (Claimant1 =:= Claimant2)),
-    case {EqualVC, V1Newer, V2Newer} of
+    New = case {EqualVC, V1Newer, V2Newer} of
         {true, _, _} ->
             Next = reconcile_next(Next1, Next2),
             StateA?CHSTATE{next=Next};
@@ -1698,7 +1677,9 @@ reconcile_ring(StateA=?CHSTATE{claimant=Claimant1, rvsn=VC1, next=Next1},
                             StateB?CHSTATE{next=Next}
                     end
             end
-    end.
+    end,
+    notify_external_membership(New),
+    New.
 
 %% @private
 merge_status(invalid, _) ->
@@ -1814,6 +1795,22 @@ filtered_seen(State=?CHSTATE{seen=Seen}) ->
         Members ->
             orddict:filter(fun(N, _) -> lists:member(N, Members) end, Seen)
     end.
+
+notify_external_membership(State=?CHSTATE{members=Members}) ->
+    %% Update membership in partisan.
+    Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
+                                        case S of
+                                            valid ->
+                                                Acc ++ [N];
+                                            joining ->
+                                                Acc ++ [N];
+                                            _ ->
+                                                Acc
+                                        end
+                        end, [], Members),
+    riak_core_partisan_utils:update(Valid),
+    ok.
+
 
 %% ===================================================================
 %% EUnit tests

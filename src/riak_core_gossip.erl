@@ -314,6 +314,7 @@ reconcile(Ring0, [OtherRing0]) ->
         {_, _, new_ring} ->
             Ring3 = riak_core_ring:ring_changed(Node, Ring2),
             riak_core_stat:update(rings_reconciled),
+            riak_core_ring:notify_external_membership(Ring3),
             log_membership_changes(Ring, Ring3),
             {reconciled_ring, Ring3};
         {_, _, _} ->
