@@ -1796,7 +1796,7 @@ filtered_seen(State=?CHSTATE{seen=Seen}) ->
             orddict:filter(fun(N, _) -> lists:member(N, Members) end, Seen)
     end.
 
-notify_external_membership(State=?CHSTATE{members=Members}) ->
+notify_external_membership(_State=?CHSTATE{members=Members}) ->
     %% Update membership in partisan.
     Valid = orddict:fold(fun(N, {S, _VC, _MD}, Acc) ->
                                         case S of
