@@ -130,8 +130,8 @@ rewrite_type(Type) ->
         gossip ->
             %% Gossip should dispatch using a monotonic channel.
             {monotonic, gossip};
-        metadata ->
-            metadata;
+        broadcast ->
+            broadcast;
         Other ->
             lager:error("Unknown message type for partisan dispatch: ~p", [Other]),
             exit({error, {unknown_partisan_dispatch_type, Other}})
