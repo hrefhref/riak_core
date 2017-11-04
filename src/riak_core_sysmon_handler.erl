@@ -190,8 +190,7 @@ format_pretty_proc_or_port_info(PidOrPort, Acf) ->
 %%     get_pretty_proc_info(Pid, current_function).
 
 get_pretty_proc_or_port_info(Pid, Acf) when is_pid(Pid) ->
-    case process_info(Pid, [registered_name, initial_call, current_function,
-                            message_queue_len]) of
+    case process_info(Pid, [registered_name, initial_call, current_function, message_queue_len]) of
         undefined ->
             undefined;
         [] ->
