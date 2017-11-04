@@ -87,7 +87,7 @@ forward(Type0, Peer, Module, Message) ->
     end.
 
 update(Nodes) ->
-    lager:info("Membership now updating members to: ~p on node ~p", [Nodes, node()]),
+    % lager:info("Membership now updating members to: ~p on node ~p", [Nodes, node()]),
     partisan_peer_service:update_members(Nodes).
 
 leave(Node) ->
