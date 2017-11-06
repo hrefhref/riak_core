@@ -101,9 +101,19 @@ join(Node) ->
     %% information for the partisan backend connections.
     ListenAddrs = rpc:call(Node, partisan_config, get, [listen_addrs]),
 
+    %% Get parallelism...
+    Parallelism = rpc:call(Node, partisan_config, get, [parallelism]),
+
+    %% Get channels...
+    Channels = rpc:call(Node, partisan_config, get, [channels]),
+
+    lager:info("Starting join from partisan utils from ~p to ~p", [node(), Node]),
+
     %% Ignore failure, partisan will retry in the background to
     %% establish connections.
-    ok = partisan_peer_service:join(#{name => Node, listen_addrs => ListenAddrs}),
+    ok = partisan_peer_service:sync_join(#{name => Node, listen_addrs => ListenAddrs, channels => Channels, parallelism => Parallelism}),
+
+    lager:info("Finishing join from ~p to ~p", [node(), Node]),
 
     ok.
 
@@ -111,6 +121,7 @@ join(Node) ->
 should_dispatch() ->
     partisan_mochiglobal:get(partisan_dispatch, false).
 
+%% @private
 configure_dispatch() ->
     ShouldDispatch = application:get_env(riak_core, partisan_dispatch, false),
     Dispatch = case ShouldDispatch of
