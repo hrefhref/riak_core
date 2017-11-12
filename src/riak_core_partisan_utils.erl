@@ -88,7 +88,7 @@ forward(Type0, Peer, Module, Message) ->
 
 update(Nodes) ->
     % lager:info("Membership now updating members to: ~p on node ~p", [Nodes, node()]),
-    partisan_peer_service:update_members(Nodes).
+    partisan_peer_service:update_members([node_map(Node) || Node <- Nodes]).
 
 leave(Node) ->
     ok = partisan_peer_service:leave(Node).
@@ -97,6 +97,17 @@ join(Nodes) when is_list(Nodes) ->
     [join(Node) || Node <- Nodes],
     ok;
 join(Node) ->
+    lager:info("Starting join from partisan utils from ~p to ~p", [node(), Node]),
+
+    %% Ignore failure, partisan will retry in the background to
+    %% establish connections.
+    ok = partisan_peer_service:sync_join(node_map(Node)),
+
+    lager:info("Finishing join from ~p to ~p", [node(), Node]),
+
+    ok.
+
+node_map(Node) ->
     %% Use RPC to get the node's specific IP and port binding
     %% information for the partisan backend connections.
     ListenAddrs = rpc:call(Node, partisan_config, get, [listen_addrs]),
@@ -107,15 +118,7 @@ join(Node) ->
     %% Get channels...
     Channels = rpc:call(Node, partisan_config, get, [channels]),
 
-    lager:info("Starting join from partisan utils from ~p to ~p", [node(), Node]),
-
-    %% Ignore failure, partisan will retry in the background to
-    %% establish connections.
-    ok = partisan_peer_service:sync_join(#{name => Node, listen_addrs => ListenAddrs, channels => Channels, parallelism => Parallelism}),
-
-    lager:info("Finishing join from ~p to ~p", [node(), Node]),
-
-    ok.
+    #{name => Node, listen_addrs => ListenAddrs, channels => Channels, parallelism => Parallelism}.
 
 %% @private
 should_dispatch() ->
