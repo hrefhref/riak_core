@@ -60,6 +60,9 @@ print_member_status(Ring) ->
     io:format("~33..=s Membership ~34..=s~n", ["", ""]),
     io:format("Status     Ring    Pending    Node~n"),
     io:format("~79..-s~n", [""]),
+    lager:info("~33..=s Membership ~34..=s~n", ["", ""]),
+    lager:info("Status     Ring    Pending    Node~n"),
+    lager:info("~79..-s~n", [""]),
     AllStatus = lists:keysort(2, riak_core_ring:all_member_status(Ring)),
     IsPending = ([] /= riak_core_ring:pending_changes(Ring)),
 
@@ -71,10 +74,15 @@ print_member_status(Ring) ->
 
                             case IsPending of
                                 true ->
+                                    lager:info("~-8s  ~5.1f%    ~5.1f%    ~p~n",
+                                               [Status, RingPercent,
+                                                NextPercent, Node]),
                                     io:format("~-8s  ~5.1f%    ~5.1f%    ~p~n",
                                               [Status, RingPercent,
                                                NextPercent, Node]);
                                 false ->
+                                    lager:info("~-8s  ~5.1f%      --      ~p~n",
+                                               [Status, RingPercent, Node]),
                                     io:format("~-8s  ~5.1f%      --      ~p~n",
                                               [Status, RingPercent, Node])
                             end,
@@ -91,6 +99,9 @@ print_member_status(Ring) ->
                                     {Joining0, Valid0, Down0, Leaving0, Exiting0 + 1}
                             end
                     end, {0,0,0,0,0}, AllStatus),
+    lager:info("~79..-s~n", [""]),
+    lager:info("Valid:~b / Leaving:~b / Exiting:~b / Joining:~b / Down:~b~n",
+               [Valid, Leaving, Exiting, Joining, Down]),
     io:format("~79..-s~n", [""]),
     io:format("Valid:~b / Leaving:~b / Exiting:~b / Joining:~b / Down:~b~n",
               [Valid, Leaving, Exiting, Joining, Down]),
