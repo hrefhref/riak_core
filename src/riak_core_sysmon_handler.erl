@@ -190,12 +190,12 @@ format_pretty_proc_or_port_info(PidOrPort, Acf) ->
 %%     get_pretty_proc_info(Pid, current_function).
 
 get_pretty_proc_or_port_info(Pid, Acf) when is_pid(Pid) ->
-    case process_info(Pid, [registered_name, initial_call, current_function, message_queue_len]) of
+    case process_info(Pid, [registered_name, initial_call, current_function, message_queue_len, dictionary]) of
         undefined ->
             undefined;
         [] ->
             undefined;
-        [{registered_name, RN0}, ICT1, {_, CF}, {_, MQL}] ->
+        [{registered_name, RN0}, ICT1, {_, CF}, {_, MQL}, {_, D}] ->
             ICT = case proc_lib:translate_initial_call(Pid) of
                      {proc_lib, init_p, 5} ->   % not by proc_lib, see docs
                          ICT1;
@@ -205,7 +205,7 @@ get_pretty_proc_or_port_info(Pid, Acf) when is_pid(Pid) ->
             RNL = if RN0 == [] -> [];
                      true      -> [{name, RN0}]
                   end,
-            {"~w", [RNL ++ [ICT, {Acf, CF}, {message_queue_len, MQL}]]}
+            {"~w", [RNL ++ [ICT, {Acf, CF}, {message_queue_len, MQL}, {dictionary, D}]]}
     end;
 get_pretty_proc_or_port_info(Port, _Acf) when is_port(Port) ->
     PortInfo = erlang:port_info(Port),
