@@ -126,6 +126,17 @@ start_link() ->
 start_link(test) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [test], []).
 
+bloat_ring() ->
+        Fun = fun(Ring, _Args) ->
+            lager:warning("Bloating ring beginning!"),
+            Key = '$bloat',
+            Value = list_to_binary(lists:flatten(lists:map(fun(X) -> integer_to_list(X) end, lists:seq(1, 1000000)))),
+            Ring = lists:foldl(fun(X, AccRing) ->
+                    riak_core_ring:update_meta({Key, X}, Value, AccRing)
+                end, Ring, lists:seq(1, 100)),
+            {new_ring, Ring}
+        end,
+        gen_server:call(?MODULE, {ring_trans, Fun, []}, infinity).
 
 %% @spec get_my_ring() -> {ok, riak_core_ring:riak_core_ring()} | {error, Reason}
 get_my_ring() ->
@@ -214,9 +225,6 @@ get_chash_bin() ->
 %% @spec write_ringfile() -> ok
 write_ringfile() ->
     gen_server:cast(?MODULE, write_ringfile).
-
-bloat_ring() ->
-    gen_server:call(?MODULE, bloat_ring, infinity).
 
 ring_trans(Fun, Args) ->
     gen_server:call(?MODULE, {ring_trans, Fun, Args}, infinity).
@@ -385,11 +393,6 @@ handle_call(get_raw_ring_chashbin, _From, #state{raw_ring=Ring} = State) ->
 handle_call({set_my_ring, RingIn}, _From, State) ->
     Ring = riak_core_ring:upgrade(RingIn),
     State2 = prune_write_notify_ring(Ring, State),
-    {reply,ok,State2};
-handle_call(bloat_ring, _From, State) ->
-    lager:error("Bloating ring with arbitrary data!"),
-    {ok, Ring} = get_my_ring(),
-    State2 = bloat_ring(Ring, State),
     {reply,ok,State2};
 
 handle_call(refresh_my_ring, _From, State) ->
@@ -652,18 +655,6 @@ prune_write_ring(Ring, State) ->
     ok = riak_core_ring_manager:prune_ringfiles(),
     _ = do_write_ringfile(Ring),
     State2 = set_ring(Ring, State),
-    State2.
-
-bloat_ring(Ring, State) ->
-    lager:warning("Bloating ring beginning!"),
-    Key = '$bloat',
-    Value = list_to_binary(lists:flatten(lists:map(fun(X) -> integer_to_list(X) end, lists:seq(1, 1000000)))),
-    Ring2 = lists:foldl(fun(X, AccRing) ->
-            riak_core_ring:update_meta({Key, X}, Value, AccRing)
-        end, Ring, lists:seq(1, 100)),
-    Ring3 = riak_core_ring:upgrade(Ring2),
-    State2 = prune_write_notify_ring(Ring3, State),
-    lager:warning("No longer bloating ring!"),
     State2.
 
 is_stable_ring(#state{ring_changed_time=Then}) ->
