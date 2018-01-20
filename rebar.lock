@@ -34,7 +34,7 @@
  {<<"rand_compat">>,{pkg,<<"rand_compat">>,<<"0.0.3">>},1},
  {<<"riak_core_partisan_utils">>,
   {git,"https://github.com/lasp-lang/riak_core_partisan_utils",
-       {ref,"9af1c65fd559df19e94f14a60e4343a50efd85b8"}},
+       {ref,"2f93659f295124fe901576d8cd72ea028b4e87b1"}},
   0},
  {<<"riak_ensemble">>,
   {git,"https://github.com/lasp-lang/riak_ensemble",
