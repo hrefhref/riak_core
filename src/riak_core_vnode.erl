@@ -213,6 +213,7 @@ send_command_after(Time, Request) ->
 
 init([Mod, Index, InitialInactivityTimeout, Forward]) ->
     process_flag(trap_exit, true),
+    put(index, Index),
     State = #state{index=Index, mod=Mod, forward=Forward,
                    inactivity_timeout=InitialInactivityTimeout},
     %% Check if parallel disabled, if enabled (default)
