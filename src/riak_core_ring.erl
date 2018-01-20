@@ -1808,9 +1808,10 @@ notify_external_membership(_State=?CHSTATE{members=Members}) ->
                                                 Acc
                                         end
                         end, [], Members),
-    riak_core_partisan_utils:update(Valid),
-    ok.
 
+    ok = riak_core_partisan_utils:update(Valid),
+
+    ok.
 
 %% ===================================================================
 %% EUnit tests

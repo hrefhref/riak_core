@@ -482,6 +482,7 @@ chbin_test_scenario() ->
     ok.
 
 chbin_test_scenario(Size, NumNodes) ->
+    meck:expect(partisan_default_peer_service_manager, update_members, fun(_) -> ok end),
     RingTop = 1 bsl 160,
     Ring = riak_core_test_util:fake_ring(Size, NumNodes),
     Nodes = riak_core_ring:all_members(Ring),

@@ -86,12 +86,12 @@ forward(Type0, Peer, Module, Message) ->
             Manager:forward_message(Peer, Type, Module, Message)
     end.
 
+leave(Node) ->
+    ok = partisan_peer_service:leave(Node).
+
 update(Nodes) ->
     % lager:info("Membership now updating members to: ~p on node ~p", [Nodes, node()]),
     partisan_peer_service:update_members([node_map(Node) || Node <- Nodes]).
-
-leave(Node) ->
-    ok = partisan_peer_service:leave(Node).
 
 join(Nodes) when is_list(Nodes) ->
     [join(Node) || Node <- Nodes],
