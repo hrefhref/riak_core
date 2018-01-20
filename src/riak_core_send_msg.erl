@@ -72,7 +72,17 @@ send_event_reliable(Name, Event) ->
     ok.
 
 bang_unreliable(Dest, Msg) ->
-    riak_core_partisan_utils:bang_unreliable(vnode, Dest, Msg).
+    case get(index) of
+        undefined ->
+            riak_core_partisan_utils:bang_unreliable(vnode, Dest, Msg);
+        Index ->
+            riak_core_partisan_utils:bang_unreliable({vnode, Index}, Dest, Msg)
+    end.
 
 bang_reliable(Dest, Msg) ->
-    riak_core_partisan_utils:bang_reliable(vnode, Dest, Msg).
+    case get(index) of
+        undefined ->
+            riak_core_partisan_utils:bang_reliable(vnode, Dest, Msg);
+        Index ->
+            riak_core_partisan_utils:bang_reliable({vnode, Index}, Dest, Msg)
+    end.
