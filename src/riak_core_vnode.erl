@@ -214,7 +214,7 @@ send_command_after(Time, Request) ->
 init([Mod, Index, InitialInactivityTimeout, Forward]) ->
     process_flag(trap_exit, true),
 
-    case partisan_config:get(vnode_partitioning, true) of
+    case partisan_config:get(vnode_partitioning, false) of
         true ->
             put(index, Index);
         false ->
