@@ -515,11 +515,7 @@ end
   "can't be a local ip",
   fun(AddrString) ->
     case inet_parse:address(AddrString) of
-<<<<<<< HEAD
-      {ok, {127, _, _, _}} -> false;
-=======
       {ok, {127, 0, _, _}} -> false;
->>>>>>> kyorai/r21
       {ok, _} -> true;
       {error, _} -> false
     end
